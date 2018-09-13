@@ -20,6 +20,9 @@ io.on('connection', function(socket){
         var id = socket.id;
         io.to(id).emit('server_to_client', data);
     });
+    socket.on('disconnect', function() {
+        io.to(room).emit('server_to_client', "退出しました");
+    });
 });
 
 http.listen(3000, function(){
