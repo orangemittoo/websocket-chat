@@ -6,10 +6,23 @@
 </head>
 <body>
 <h1>Chatアプリ</h1>
+
+<form class="form-inline">
+  <div class="form-group">
+      <label class="roomLabel" for="rooms">部屋：</label>
+      <select class="form-control" id="rooms">
+          <option value="room01">部屋01</option>
+          <option value="room02">部屋02</option>
+      </select>
+  </div>
+  <button type="submit" class="btn btn-primary" id="sendButton">入室</button>
+</form>
+
 <form id='form'>
   <input id="chat" />
   <button>送信</button>
 </form>
+
 <ul id="messages"></ul>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.1.1/socket.io.js"></script>
 <script>
@@ -17,18 +30,27 @@ var socket = io("localhost:3000");
 var form = document.getElementById('form');
 var chat = document.getElementById('chat');
 var messages = document.getElementById('messages');
+var selectRoom = document.getElementById('rooms');
+var roomBtn = document.getElementById('sendButton');
 
 form.addEventListener('submit', function (e) {
   // websocketを使うのでフォームの送信をキャンセル
   e.preventDefault();
   
   // イベントを発火しデータを受け渡す
-  socket.emit('chat', chat.value);
+  socket.emit('client_to_server', chat.value);
   chat.value = '';
 });
 
+roomBtn.addEventListener('click', function(evt) {
+  evt.preventDefault();
+  socket.emit("client_to_server_join", selectRoom.value);
+  socket.emit("client_to_server_broadcast", selectRoom.value + "に〇〇さんが入室しました");
+  socket.emit("client_to_server_personal", selectRoom.value + "に入室しました");
+});
+
 // サーバ側からchatイベントを待ち受ける
-socket.on('chat', function (msg) {
+socket.on('server_to_client', function (msg) {
   var li = document.createElement('li');
   li.textContent = msg;
   messages.appendChild(li);

@@ -5,8 +5,20 @@ const io = require('socket.io')(http);
 app.get('/', (req, res) => res.send('Hello World!'))
 
 io.on('connection', function(socket){
-    socket.on('chat', (msg) => {
-        io.emit('chat', msg);
+    let room = '';
+    socket.on('client_to_server', (msg) => {
+        io.to(room).emit('server_to_client', msg);
+    });
+    socket.on('client_to_server_join', function(data) {
+        room = data;
+        socket.join(room);
+    });
+    socket.on('client_to_server_broadcast', function(data) {
+        socket.broadcast.to(room).emit('server_to_client', data);
+    });
+    socket.on('client_to_server_personal', function(data) {
+        var id = socket.id;
+        io.to(id).emit('server_to_client', data);
     });
 });
 
